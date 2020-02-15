@@ -3,16 +3,28 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+from tensorflow.keras.utils import Sequence
 
 
-def build_simple_model(opt='sgd'):
+def build_simple_model(dataset='fashion_mnist', opt='sgd', hidden=None, funcs=None, loss=None):
     model = models.Sequential()
-    model.add(layers.Flatten(input_shape=[28, 28]))
-    model.add(layers.Dense(300, activation="relu"))
-    model.add(layers.Dense(100, activation="relu"))
+    if dataset == 'CIFAR-10':
+        model.add(layers.Flatten(input_shape=[32, 32, 3]))
+    elif('Fashion Mnist'):
+        model.add(layers.Flatten(input_shape=[28, 28]))
+    for i in hidden.keys():
+        model.add(layers.Dense(hidden[i], activation=funcs[i].lower()))
     model.add(layers.Dense(10, activation="softmax"))
 
-    model.compile(loss="sparse_categorical_crossentropy",
+    loss_dict = {
+        'Categorical Crossentropy': 'sparse_categorical_crossentropy',
+        'Binary Crossentropy' : 'binary_crossentropy',
+        'Categorical Hinge': 'categorical_hinge',
+        'Huber loss': 'huber_loss'
+    }
+    loss_f = loss_dict.get(loss)
+
+    model.compile(loss=loss_f,
                   optimizer=opt,
                   metrics=['accuracy'])
     return model

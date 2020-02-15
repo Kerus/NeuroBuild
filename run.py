@@ -1,5 +1,5 @@
 import streamlit as st
-from tensorflow.keras import datasets, layers, models, optimizers
+from tensorflow.keras import datasets, layers, models, optimizers, utils
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -16,6 +16,9 @@ st.title('Neuro Build')
 task_option = st.sidebar.radio('Choose a task', ('Dataset overview', 'Feed-forward networks',
                                                            'Convolutional networks', 'AutoEncoders',
                                                            'GAN', 'Recurrent networks'))
+
+dataset = st.selectbox('choose dataset', ('Fashion Mnist', 'CIFAR-10'))
+
 #if data_path is not None:
 #    df = st.cache(pd.read_csv)(data_path)
 if task_option == 'Dataset overview':
@@ -26,14 +29,32 @@ if task_option == 'Dataset overview':
 
 elif task_option == 'Feed-forward networks':
 
-    st.header('Feed-forward network')
+    st.header('Construct feed-forward network')
+    st.write('input and output layers are currently set by default')
+    hidden = st.number_input('Count of hidden layers: ', value=2, max_value=10, min_value=1)
+    i_layers = dict()
+    i_act_funcs = dict()
+    st.write(
+        f'<div style="height:1px;border:solid 1px #cccccc;margin-bottom:10px;"></div>',
+        unsafe_allow_html=True
+    )
+    for i in range(hidden):
+        i_layers[i] = st.number_input('Hidden layer {:.0f}. Count of neurons: '.format(i+1),
+                                      value=300, max_value=10000, min_value=1)
+        i_act_funcs[i] = st.selectbox('Activation function of layer {:.0f}'.format(i+1),
+                                      ('ReLU', 'SELU', 'Tanh', 'Sigmoid', 'Linear'))
 
-    dataset = st.selectbox('choose dataset', ('Fashion Mnist', 'CIFAR'))
-
+        st.write(
+            f'<div style="height:1px;border:solid 1px #cccccc;margin-bottom:40px;"></div>',
+            unsafe_allow_html=True
+        )
+    st.write('Adjust other hyper-parameters')
     opt = st.selectbox('Optimiser', ('sgd', 'adadelta', 'adagrad', 'adam', 'adamax'))
     epochs = st.number_input('Epochs: ', value=30, max_value=10000, min_value=1)
     val_perc = st.number_input('Percent of validation data: ', value=10, max_value=70, min_value=5)
-    val_split = val_perc / 10
+    val_split = val_perc / 100
+    loss_f = st.selectbox('Loss function', ('Categorical Crossentropy', 'Binary Crossentropy',
+                                            'Categorical Hinge', 'Huber loss'))
 
     if st.button("Train Network"):
 
@@ -47,8 +68,18 @@ elif task_option == 'Feed-forward networks':
 
                 class_names = ["T-shirt/top", "Trouser", "Pullover", "Dress", "Coat",
                                "Sandal", "Shirt", "Sneaker", "Bag", "Ankle boot"]
+            elif dataset == 'CIFAR-10':
+                cifar = datasets.cifar10
+                (X_train, y_train), (X_test, y_test) = cifar.load_data()
+                X_train = X_train / 255.0
+                X_test = X_test / 255.0
 
-            model = build_simple_model(opt=opt)
+            if loss_f != 'Categorical Crossentropy':
+                y_train = utils.to_categorical(y_train, 10)
+                y_test = utils.to_categorical(y_test, 10)
+
+            model = build_simple_model(dataset=dataset, opt=opt, hidden=i_layers, funcs=i_act_funcs, loss=loss_f)
+
             history = model.fit(X_train, y_train, epochs=epochs, validation_split=val_split, shuffle=True)
 
         st.success('Training is finished')
