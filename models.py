@@ -1,4 +1,4 @@
-from tensorflow.keras import datasets, layers, models, optimizers
+from tensorflow.keras import datasets, layers, models, optimizers, metrics
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
@@ -6,7 +6,7 @@ import pandas as pd
 from tensorflow.keras.utils import Sequence
 
 
-def build_simple_model(dataset='fashion_mnist', opt='sgd', hidden=None, funcs=None, loss=None):
+def build_simple_model(dataset='Fashion Mnist', opt='sgd', hidden=None, funcs=None, loss=None, metrics_list=None):
     model = models.Sequential()
     if dataset == 'CIFAR-10':
         model.add(layers.Flatten(input_shape=[32, 32, 3]))
@@ -17,16 +17,26 @@ def build_simple_model(dataset='fashion_mnist', opt='sgd', hidden=None, funcs=No
     model.add(layers.Dense(10, activation="softmax"))
 
     loss_dict = {
-        'Categorical Crossentropy': 'sparse_categorical_crossentropy',
+        'Categorical Crossentropy': 'categorical_crossentropy',
         'Binary Crossentropy' : 'binary_crossentropy',
         'Categorical Hinge': 'categorical_hinge',
         'Huber loss': 'huber_loss'
     }
+    metrics_dict = {
+        'auc': metrics.AUC(),
+        'recall': metrics.Recall(),
+        'accuracy': metrics.CategoricalAccuracy() if loss.startswith('Categorical') else metrics.Accuracy()
+    }
+    if metrics_list is not None:
+        metrics_list = [metrics_dict.get(m, m) for m in metrics_list]
+    else:
+        metrics_list = ['accuracy']
+
     loss_f = loss_dict.get(loss)
 
     model.compile(loss=loss_f,
                   optimizer=opt,
-                  metrics=['accuracy'])
+                  metrics=metrics_list)
     return model
 
 

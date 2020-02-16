@@ -55,6 +55,7 @@ elif task_option == 'Feed-forward networks':
     val_split = val_perc / 100
     loss_f = st.selectbox('Loss function', ('Categorical Crossentropy', 'Binary Crossentropy',
                                             'Categorical Hinge', 'Huber loss'))
+    metrics_list = st.multiselect('Metrics: ', ('accuracy', 'recall', 'auc'), ('accuracy'))
 
     if st.button("Train Network"):
 
@@ -74,17 +75,18 @@ elif task_option == 'Feed-forward networks':
                 X_train = X_train / 255.0
                 X_test = X_test / 255.0
 
-            if loss_f != 'Categorical Crossentropy':
-                y_train = utils.to_categorical(y_train, 10)
-                y_test = utils.to_categorical(y_test, 10)
+            y_train = utils.to_categorical(y_train, 10)
+            y_test = utils.to_categorical(y_test, 10)
 
-            model = build_simple_model(dataset=dataset, opt=opt, hidden=i_layers, funcs=i_act_funcs, loss=loss_f)
+            model = build_simple_model(dataset=dataset, opt=opt, hidden=i_layers,
+                                       funcs=i_act_funcs, loss=loss_f, metrics_list=metrics_list)
 
             history = model.fit(X_train, y_train, epochs=epochs, validation_split=val_split, shuffle=True)
 
         st.success('Training is finished')
 
         plot_model_history(history)
+        st.write('Loss function: ', loss_f)
         print_model_results(model, X_train, y_train, train=True)
         print_model_results(model, X_test, y_test, train=False)
 
