@@ -25,9 +25,15 @@ def build_simple_model(dataset='Fashion Mnist', opt='sgd', hidden=None, funcs=No
     metrics_dict = {
         'auc': metrics.AUC(),
         'recall': metrics.Recall(),
-        'accuracy': metrics.CategoricalAccuracy() if loss.startswith('Categorical') else metrics.Accuracy()
+        'accuracy': metrics.CategoricalAccuracy() if loss.startswith('Categorical') else metrics.Accuracy(),
+        'precision': metrics.Precision(),
+        'categorical Hinge': metrics.CategoricalHinge(),
+        'squared Hinge': metrics.SquaredHinge(),
+        'Kullback-Leibler divergence':metrics.KLDivergence(),
+        'mean absolute error': metrics.MeanAbsoluteError(),
+        'mean squared error': metrics.MeanSquaredError()
     }
-    if metrics_list is not None:
+    if metrics_list is not None and len(metrics_list) > 0:
         metrics_list = [metrics_dict.get(m, m) for m in metrics_list]
     else:
         metrics_list = ['accuracy']
@@ -49,6 +55,7 @@ def print_model_results(model, X, y, train=True):
     results = [np.round(float(res), 2) for res in results]
     metrics = dict(zip(model.metrics_names, results))
     st.write(metrics)
+    st.write(model.summary())
 
 
 def plot_model_history(history):
@@ -57,3 +64,4 @@ def plot_model_history(history):
     plt.gca().set_ylim(0, 1)  # set the vertical range to [0-1]
     plt.show()
     st.pyplot()
+

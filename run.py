@@ -50,12 +50,16 @@ elif task_option == 'Feed-forward networks':
         )
     st.write('Adjust other hyper-parameters')
     opt = st.selectbox('Optimiser', ('sgd', 'adadelta', 'adagrad', 'adam', 'adamax'))
-    epochs = st.number_input('Epochs: ', value=30, max_value=10000, min_value=1)
-    val_perc = st.number_input('Percent of validation data: ', value=10, max_value=70, min_value=5)
-    val_split = val_perc / 100
+
     loss_f = st.selectbox('Loss function', ('Categorical Crossentropy', 'Binary Crossentropy',
                                             'Categorical Hinge', 'Huber loss'))
-    metrics_list = st.multiselect('Metrics: ', ('accuracy', 'recall', 'auc'), ('accuracy'))
+    metrics_list = st.multiselect('Metrics: ', ('accuracy', 'recall', 'precision', 'auc', 'categorical Hinge',
+                                                'squared Hinge', 'Kullback-Leibler divergence',
+                                                'mean absolute error', 'mean squared error'), ('accuracy'))
+
+    epochs = st.number_input('Count of Epochs: ', value=30, max_value=10000, min_value=1)
+    val_perc = st.number_input('Percent of validation data: ', value=10, max_value=70, min_value=5)
+    val_split = val_perc / 100
 
     if st.button("Train Network"):
 
